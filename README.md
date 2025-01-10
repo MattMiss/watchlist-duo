@@ -1,53 +1,65 @@
-# watchlist-duo
-A Firebase-powered app for managing a shared watchlist of movies and shows
 
-# React + TypeScript + Vite
+# Watchlist Duo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Watchlist Duo is a web application designed to help manage and share a personalized list of movies and TV shows. This app is currently tailored for private use by myself and my wife, but it could be adapted for broader use in the future.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Unified List**: Maintain a single, streamlined list for both movies and TV shows, making it easy to organize and track all your watchlist items in one place.
+- **Duo Sharing**: Connect with a "Duo Partner" to view their list and discover shared interests through a common "Our List" of items that appear on both lists.
+- **User-Friendly Interface**: A clean and responsive UI for easy navigation and interaction.
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Frontend**: React with TypeScript
+- **Backend**: Firebase
+- **Styling**: Tailwind CSS
+- **Deployment**: GitHub Pages
 
-- Configure the top-level `parserOptions` property like this:
+## Installation
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+To use the application, you will need to obtain an API key from TMDB for fetching movie and TV show data. Additionally, you will need a Firebase project with a configured Firestore database to store user and list data.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/MattMiss/watchlist-duo.git
+   cd watchlist-duo
+   ```
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+3. Create a `.env` file in the root directory and add your Firebase configuration as well as your TMDB API key:
+   ```env
+    VITE_FIREBASE_API_KEY=your_firebase_auth_domain
+    VITE_FIREBASE_AUTH_DOMAIN=watchlist-duo.firebaseapp.com
+    VITE_FIREBASE_PROJECT_ID=your_firebase_project_id
+    VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+    VITE_FIREBASE_APP_ID=your_firebase_app_id
+    VITE_TMDB_API_KEY=your_tmdb_api_key
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open the app in your browser at [http://localhost:5173](http://localhost:5173).
+
+## Usage
+
+This app is currently intended for personal use between myself and my wife. While the repository is public, the app is not designed for general use at this time. If you’re interested in forking or adapting this project, feel free to do so!
+
+## Future Plans
+
+- Allow more users to be able to use this app
+- Improve sharing functionality for family and friends.
+- Enhance accessibility and mobile responsiveness.
+
+## Contributing
+
+Since this project is for personal use, contributions are not being accepted at this time. If you have suggestions or ideas, feel free to open an issue.
+
