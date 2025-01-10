@@ -48,6 +48,7 @@ const Search = () => {
 
     const renderMediaResults = (results: (Movie | TV | Person | Multi)[]) => {
         return results.map((result) => {
+            // Use type guards to narrow the type of `result`
             if ("media_type" in result) {
                 if (result.media_type === "movie") {
                     return (
@@ -71,30 +72,11 @@ const Search = () => {
                     );
                 }
                 return null;
-            } else if ("title" in result) {
-                return (
-                    <MediaResultCard
-                        key={result.id}
-                        media={result as Movie}
-                        type="movie"
-                        actionLabel="Add to My List"
-                        onActionClick={() => handleAddToList(result as Movie, "movie")}
-                    />
-                );
-            } else if ("name" in result && "first_air_date" in result) {
-                return (
-                    <MediaResultCard
-                        key={result.id}
-                        media={result as TV}
-                        type="tv"
-                        actionLabel="Add to My List"
-                        onActionClick={() => handleAddToList(result as TV, "tv")}
-                    />
-                );
             }
             return null;
         });
     };
+    
 
     return (
         <div className="max-w-full md:max-w-3xl lg:max-w-4xl mx-auto p-6">

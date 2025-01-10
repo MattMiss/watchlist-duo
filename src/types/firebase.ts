@@ -5,3 +5,13 @@ export interface User extends FirebaseUser {
     partnerUid: string | null;         // UID of the connected partner, if any (nullable)
     createdAt: string;              // Timestamp of account creation (optional for Firebase user context)
 }
+
+// Extender user used for retrieving idToken
+export interface ExtendedUser extends FirebaseUser {
+    stsTokenManager?: {
+        accessToken: string;
+        refreshToken: string;
+        expirationTime: number;
+    };
+}
+

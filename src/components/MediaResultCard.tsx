@@ -71,7 +71,7 @@ const MediaResultCard = ({
         </span>
 
         {/* Action Button */}
-        {media.isOwner && (
+        {(!media.owner || media.owner == "self") && (
         <button
             onClick={onActionClick}
             className={`w-full mt-4 px-4 py-2 ${actionBtnColor} text-white rounded-lg ${actionBtnHoverColor} focus:outline-none`}

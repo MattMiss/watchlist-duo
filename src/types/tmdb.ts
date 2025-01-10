@@ -22,7 +22,7 @@ export interface Movie extends BaseMedia {
     title?: string; // Optional
     video?: boolean; // Optional
     media_type: "movie";
-    isOwner?: boolean; // Is from My List or not
+    owner?: "self" | "partner" | "search";
 }
 
 export interface TV extends BaseMedia {
@@ -31,7 +31,7 @@ export interface TV extends BaseMedia {
     first_air_date?: string; // Optional
     name?: string; // Optional
     media_type: "tv";
-    isOwner?: boolean; // Is from My List or not
+    owner?: "self" | "partner" | "search";
 }
 
 export interface Person extends Base {
@@ -42,6 +42,7 @@ export interface Person extends Base {
     profile_path?: string; // Optional
     known_for?: Multi[]; // Optional
     media_type: "person"
+    owner?: "self" | "partner" | "search";
 }
 
 export type Multi =

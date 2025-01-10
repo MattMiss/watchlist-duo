@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react-swc'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    hmr: {
-      host: '10.0.0.47',
+    plugins: [react()],
+    base: "/watchlist-duo/", // Ensure this matches your repository name
+    build: {
+        outDir: "dist",
+        emptyOutDir: true,
     },
-  },
-})
+});

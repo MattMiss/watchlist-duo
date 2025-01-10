@@ -1,128 +1,146 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Movie, TV, Person, MovieResults, TVResults, PersonResults, MultiResults } from "../types/tmdb";
+import { Movie, TV, Person } from "../types/tmdb";
 import { toast } from "react-toastify";
 import { SearchOptions } from "../types/tmdb";
 import { SearchResultsContext } from "./searchResultsContext";
-
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-
-// interface SearchResultsContextType {
-//   isLoadingSearchResults: boolean;
-//   results: (Movie | TV | Person)[];
-//   searchOptions: SearchOptions;
-//   setSearchOptions: (options: Partial<SearchOptions>) => void;
-//   handleSearch: () => void;
-// }
-
-// interface SearchOptions {
-//   query: string;
-//   includeAdult: boolean;
-//   language: string;
-//   primaryReleaseYear: string;
-//   year: string;
-//   region: string;
-//   searchType: "movie" | "tv" | "person" | "multi";
-//   excludeIncomplete: boolean;
-//   page: number;
-// }
-
-// //export const SearchResultsContext = createContext<SearchResultsContextType | undefined>(undefined);
-// export const SearchResultsContext = createContext<SearchResultsContextType>({
-//   isLoadingSearchResults: false,
-//   results: [],
-//   searchOptions: {
-//     query: "",
-//     includeAdult: false,
-//     language: "en-US",
-//     primaryReleaseYear: "",
-//     year: "",
-//     region: "",
-//     searchType: "multi",
-//     excludeIncomplete: false,
-//     page: 1,
-//   },
-//   setSearchOptions: () => {},
-//   handleSearch: () => {},
-// });
+import { useAuth } from "./useAuthContext";
+import { ExtendedUser } from "../types/firebase";
 
 const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
-  const [results, setResults] = useState<(Movie | TV | Person)[]>([]);
-  const [isLoadingSearchResults, setIsLoadingSearchResults] = useState(false);
+    const { currentUser } = useAuth();
+    const [results, setResults] = useState<(Movie | TV | Person)[]>([]);
+    const [isLoadingSearchResults, setIsLoadingSearchResults] = useState(false);
+  
+    // Default search options
+    const [searchOptions, setSearchOptions] = useState<SearchOptions>({
+        query: "",
+        includeAdult: false,
+        language: "en-US",
+        primaryReleaseYear: "",
+        year: "",
+        region: "",
+        searchType: "multi",
+        excludeIncomplete: false,
+        page: 1,
+    });
+  
+    const handleSearch = async () => {
+        if (!searchOptions.query) return;
+    
+        const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/search`;
+    
+        try {
+            if (!currentUser) {
+                toast.error("User not authenticated. Please log in.");
+                return;
+            }
 
-  // Default search options
-  const [searchOptions, setSearchOptions] = useState<SearchOptions>({
-    query: "",
-    includeAdult: false,
-    language: "en-US",
-    primaryReleaseYear: "",
-    year: "",
-    region: "",
-    searchType: "multi",
-    excludeIncomplete: false,
-    page: 1,
-  });
+            const idToken = (currentUser as ExtendedUser)?.stsTokenManager?.accessToken;
 
-  const handleSearch = async () => {
-    if (!searchOptions.query) return;
-
-    const apiUrlMap: Record<"movie" | "tv" | "person" | "multi", string> = {
-      movie: "https://api.themoviedb.org/3/search/movie",
-      tv: "https://api.themoviedb.org/3/search/tv",
-      person: "https://api.themoviedb.org/3/search/person",
-      multi: "https://api.themoviedb.org/3/search/multi",
+            setIsLoadingSearchResults(true);
+    
+            // Define the response type dynamically based on `searchType`
+            let response;
+            if (searchOptions.searchType === "movie") {
+                response = await axios.get<{ results: Movie[] }>(apiUrl, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`, // Add the token in the header
+                        "Content-Type": "application/json",
+                    },
+                        params: {
+                        query: searchOptions.query,
+                        includeAdult: searchOptions.includeAdult,
+                        language: searchOptions.language,
+                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
+                        year: searchOptions.year || undefined,
+                        region: searchOptions.region || undefined,
+                        searchType: searchOptions.searchType,
+                        page: searchOptions.page,
+                    },
+                });
+            } else if (searchOptions.searchType === "tv") {
+                response = await axios.get<{ results: TV[] }>(apiUrl, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`, // Add the token in the header
+                        "Content-Type": "application/json",
+                    },
+                        params: {
+                        query: searchOptions.query,
+                        includeAdult: searchOptions.includeAdult,
+                        language: searchOptions.language,
+                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
+                        year: searchOptions.year || undefined,
+                        region: searchOptions.region || undefined,
+                        searchType: searchOptions.searchType,
+                        page: searchOptions.page,
+                    },
+                });
+            } else if (searchOptions.searchType === "person") {
+                response = await axios.get<{ results: Person[] }>(apiUrl, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`, // Add the token in the header
+                        "Content-Type": "application/json",
+                    },
+                        params: {
+                        query: searchOptions.query,
+                        includeAdult: searchOptions.includeAdult,
+                        language: searchOptions.language,
+                        searchType: searchOptions.searchType,
+                        page: searchOptions.page,
+                    },
+                });
+            } else {
+                response = await axios.get<{ results: (Movie | TV | Person)[] }>(apiUrl, {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`, // Add the token in the header
+                        "Content-Type": "application/json",
+                    },
+                        params: {
+                        query: searchOptions.query,
+                        includeAdult: searchOptions.includeAdult,
+                        language: searchOptions.language,
+                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
+                        year: searchOptions.year || undefined,
+                        region: searchOptions.region || undefined,
+                        searchType: searchOptions.searchType,
+                        page: searchOptions.page,
+                    },
+                });
+            }
+    
+            const filteredResults = searchOptions.excludeIncomplete
+            ? response.data.results.filter((result) => {
+                if ("poster_path" in result) {
+                    return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
+                }
+                return true;
+                })
+            : response.data.results;
+    
+            setResults(filteredResults);
+        } catch (error) {
+            toast.error("Error fetching results. Please refresh and try again.");
+            console.error("Error fetching results:", error);
+        } finally {
+            setIsLoadingSearchResults(false);
+        }
     };
 
-    try {
-      setIsLoadingSearchResults(true);
-      const response = await axios.get<MovieResults | TVResults | PersonResults | MultiResults>(
-        apiUrlMap[searchOptions.searchType],
-        {
-          params: {
-            api_key: TMDB_API_KEY,
-            query: searchOptions.query,
-            include_adult: searchOptions.includeAdult,
-            language: searchOptions.language,
-            primary_release_year: searchOptions.primaryReleaseYear || undefined,
-            year: searchOptions.year || undefined,
-            region: searchOptions.region || undefined,
-            page: searchOptions.page,
-          },
-        }
-      );
-
-      const filteredResults = searchOptions.excludeIncomplete
-        ? (response.data.results as (Movie | TV | Person)[]).filter((result) => {
-            if ("poster_path" in result) {
-              return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
-            }
-            return true;
-          })
-        : response.data.results;
-
-      setResults(filteredResults);
-    } catch (error) {
-      toast.error("Error fetching results. Please refresh and try again.");
-      console.error("Error fetching results:", (error as Error).message);
-    } finally {
-      setIsLoadingSearchResults(false);
-    }
-  };
-
   return (
-    <SearchResultsContext.Provider
-      value={{
-        isLoadingSearchResults,
-        results,
-        searchOptions,
-        setSearchOptions: (options) =>
-          setSearchOptions((prevOptions) => ({ ...prevOptions, ...options })),
-        handleSearch,
-      }}
-    >
-      {children}
-    </SearchResultsContext.Provider>
-  );
+        <SearchResultsContext.Provider
+            value={{
+                isLoadingSearchResults,
+                results,
+                searchOptions,
+                setSearchOptions: (options) =>
+                setSearchOptions((prevOptions) => ({ ...prevOptions, ...options })),
+                handleSearch,
+            }}
+        >
+            {children}
+        </SearchResultsContext.Provider>
+    );
 };
 
 export default SearchResultsProvider;
