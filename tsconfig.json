@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true, // Catch unused variables
+    "noUnusedParameters": true, // Catch unused parameters
+    "noImplicitReturns": true // Ensure functions return properly
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}
