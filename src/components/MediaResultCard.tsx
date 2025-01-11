@@ -20,6 +20,7 @@ const MediaResultCard = ({
     actionBtnHoverColor = "hover:bg-green-700",
     onActionClick,
 }: MediaResultCardProps) => {
+    console.log(media);
     return (
     <div className="relative border rounded-lg shadow-md overflow-hidden mb-6 p-4">
         {/* Two-Column Layout */}

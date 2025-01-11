@@ -49,7 +49,7 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
                         "Content-Type": "application/json",
                     },
                         params: {
-                        query: searchOptions.query,
+                        query: searchOptions.query.trim(),
                         includeAdult: searchOptions.includeAdult,
                         language: searchOptions.language,
                         primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
@@ -66,7 +66,7 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
                         "Content-Type": "application/json",
                     },
                         params: {
-                        query: searchOptions.query,
+                        query: searchOptions.query.trim(),
                         includeAdult: searchOptions.includeAdult,
                         language: searchOptions.language,
                         primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
@@ -83,7 +83,7 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
                         "Content-Type": "application/json",
                     },
                         params: {
-                        query: searchOptions.query,
+                        query: searchOptions.query.trim(),
                         includeAdult: searchOptions.includeAdult,
                         language: searchOptions.language,
                         searchType: searchOptions.searchType,
@@ -97,7 +97,7 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
                         "Content-Type": "application/json",
                     },
                         params: {
-                        query: searchOptions.query,
+                        query: searchOptions.query.trim(),
                         includeAdult: searchOptions.includeAdult,
                         language: searchOptions.language,
                         primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
@@ -109,16 +109,18 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
                 });
             }
     
-            const filteredResults = searchOptions.excludeIncomplete
-            ? response.data.results.filter((result) => {
-                if ("poster_path" in result) {
-                    return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
-                }
-                return true;
-                })
-            : response.data.results;
+            // const filteredResults = searchOptions.excludeIncomplete
+            // ? response.data.results.filter((result) => {
+            //     if ("poster_path" in result) {
+            //         return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
+            //     }
+            //     return true;
+            //     })
+            // : response.data.results;
+
+            console.log(response.data.results);
     
-            setResults(filteredResults);
+            setResults(response.data.results);
         } catch (error) {
             toast.error("Error fetching results. Please refresh and try again.");
             console.error("Error fetching results:", error);

@@ -46,10 +46,12 @@ const Search = () => {
         }
     };
 
+    console.log(searchOptions.page);
+
     const renderMediaResults = (results: (Movie | TV | Person | Multi)[]) => {
         return results.map((result) => {
-            // Use type guards to narrow the type of `result`
-            if ("media_type" in result) {
+            // Handle multi search results with media_type
+            if ((result as Movie | TV | Person | Multi).media_type) {
                 if (result.media_type === "movie") {
                     return (
                         <MediaResultCard
@@ -70,12 +72,37 @@ const Search = () => {
                             onActionClick={() => handleAddToList(result as TV, "tv")}
                         />
                     );
+                } else if (result.media_type === "person") {
+                    return null;
                 }
-                return null;
             }
-            return null;
+            // Handle results from specific search types (movie or tv)
+            if ("title" in result) {
+                return (
+                    <MediaResultCard
+                        key={result.id}
+                        media={result as Movie}
+                        type="movie"
+                        actionLabel="Add to My List"
+                        onActionClick={() => handleAddToList(result as Movie, "movie")}
+                    />
+                );
+            } else if ("name" in result && "first_air_date" in result) {
+                return (
+                    <MediaResultCard
+                        key={result.id}
+                        media={result as TV}
+                        type="tv"
+                        actionLabel="Add to My List"
+                        onActionClick={() => handleAddToList(result as TV, "tv")}
+                    />
+                );
+            }
+            return null; // Ignore unsupported result types
         });
     };
+    
+    
     
 
     return (
@@ -86,13 +113,13 @@ const Search = () => {
                 type="text"
                 value={searchOptions.query}
                 onChange={(e) =>
-                    setSearchOptions({ query: e.target.value.trim() })
+                    setSearchOptions({ query: e.target.value })
                 }
                 placeholder="Search for movies, TV shows, or people..."
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                 onKeyDown={(e) => {
-                    if (e.key === "Enter" && searchOptions.query.trim()) {
-                    handleSearch();
+                    if (e.key === "Enter" && searchOptions.query) {
+                        handleSearch();
                     }
                 }}
             />
