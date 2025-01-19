@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useMyList } from "../context/useMyListContext";
-import { useDuoPartnerList } from "../context/useDuoPartnerListContext";
+import { useMyList } from "../context/myList/useMyListContext";
+import { useDuoPartnerList } from "../context/duoPartnerList/useDuoPartnerListContext";
 import MediaResultCard from "./MediaResultCard";
 import Spinner from "./Spinner";
 import { Movie, TV } from "../types/tmdb";
-import { useAuth } from "../context/useAuthContext";
+import { useAuth } from "../context/auth/useAuthContext";
 
 const MediaLists = () => {
   const { currentUser } = useAuth();

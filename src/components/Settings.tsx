@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../context/useAuthContext";
+import { useAuth } from "../context/auth/useAuthContext";
 import { connectWithPartner } from "../utils/connectWithPartner";
 import { disconnectFromPartner } from "../utils/disconnectWithPartner";
 import { toast } from "react-toastify";

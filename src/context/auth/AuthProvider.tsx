@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
-import { User } from "../types/firebase";
+import { User } from "../../types/firebase";
 import { AuthContext } from "./authContext";
-import { auth } from "../firebase";
+import { auth } from "../../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-import initializeUserInDatabase from "../utils/initializeUserInDatabase";
+import initializeUserInDatabase from "../../utils/initializeUserInDatabase";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);

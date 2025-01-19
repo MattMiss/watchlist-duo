@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Movie, TV } from "../types/tmdb";
+import { Movie, TV } from "../../types/tmdb";
 import { MyListContext } from "./myListContext";
-import { useAuth } from "./useAuthContext";
-import { ExtendedUser } from "../types/firebase";
+import { useAuth } from "../auth/useAuthContext";
+import { ExtendedUser } from "../../types/firebase";
 
 const MyListProvider = ({ children }: { children: React.ReactNode }) => {
     const { currentUser } = useAuth();

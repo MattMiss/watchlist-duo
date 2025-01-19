@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { Movie, TV } from "../types/tmdb";
+import { Movie, TV } from "../../types/tmdb";
 
 interface MyListContextProps {
   isLoadingMyList: boolean;

@@ -74,5 +74,14 @@ export interface SearchOptions {
     searchType: "movie" | "tv" | "person" | "multi";
     excludeIncomplete: boolean;
     page: number;
-  }
+}
+
+export interface DiscoverOptions {
+    language: string;
+    mediaType: "movie" | "tv";
+    discoverType: "popular" | "trending";
+    timeWindow?: "week" | "day",
+    excludeIncomplete: boolean;
+    page: number;
+}
   

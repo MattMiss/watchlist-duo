@@ -6,9 +6,10 @@ import { auth } from "./firebase";
 import Login from "./components/Login";
 import Search from "./components/Search";
 import MediaLists from "./components/MediaLists";
+import Discover from "./components/Discover";
 import { FaBars } from "react-icons/fa";
 import "./tailwind.css";
-import { useAuth } from "./context/useAuthContext";
+import { useAuth } from "./context/auth/useAuthContext";
 import Spinner from "./components/Spinner";
 import Settings from "./components/Settings";
 
@@ -78,6 +79,14 @@ const App = () => {
                     >
                         Search
                     </button>
+                    <button
+                        className={`px-4 py-2 rounded ${
+                        activeTab === "discover" ? "bg-gray-600" : "hover:bg-gray-700"
+                        }`}
+                        onClick={() => setActiveTab("discover")}
+                    >
+                        Discover
+                    </button>
                 </div>
 
                 {/* User Info and Hamburger Menu */}
@@ -132,6 +141,7 @@ const App = () => {
                 {activeTab === "list" && <MediaLists />}
                 {activeTab === "search" && <Search />}
                 {activeTab === "settings" && <Settings />}
+                {activeTab === "discover" && <Discover />}
             </div>
         </div>
     );

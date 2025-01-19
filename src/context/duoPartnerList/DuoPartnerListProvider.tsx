@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Movie, TV } from "../types/tmdb";
+import { Movie, TV } from "../../types/tmdb";
 import { DuoPartnerListContext } from "./duoPartnerListContext";
-import { useAuth } from "./useAuthContext";
-import { ExtendedUser } from "../types/firebase";
+import { useAuth } from "../auth/useAuthContext";
+import { ExtendedUser } from "../../types/firebase";
 
 const DuoPartnerListProvider = ({ children }: { children: React.ReactNode }) => {
     const { currentUser } = useAuth();

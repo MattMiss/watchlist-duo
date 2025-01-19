@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Movie, TV, Person } from "../types/tmdb";
+import { Movie, TV, Person } from "../../types/tmdb";
 import { toast } from "react-toastify";
-import { SearchOptions } from "../types/tmdb";
+import { SearchOptions } from "../../types/tmdb";
 import { SearchResultsContext } from "./searchResultsContext";
-import { useAuth } from "./useAuthContext";
-import { ExtendedUser } from "../types/firebase";
+import { useAuth } from "../auth/useAuthContext";
+import { ExtendedUser } from "../../types/firebase";
 
 const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
     const { currentUser } = useAuth();

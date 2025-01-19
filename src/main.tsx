@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import AuthProvider from "./context/AuthProvider";
-import MyListProvider from "./context/MyListProvider";
-import SearchResultsProvider from "./context/SearchResultsProvider";
-import DuoPartnerListProvider from "./context/DuoPartnerListProvider";
-
+import AuthProvider from "./context/auth/AuthProvider";
+import MyListProvider from "./context/myList/MyListProvider";
+import SearchResultsProvider from "./context/searchResults/SearchResultsProvider";
+import DuoPartnerListProvider from "./context/duoPartnerList/DuoPartnerListProvider";
+import PopularResultsProvider from "./context/popularResults/DiscoverResultsProvider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
@@ -13,7 +13,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
             <MyListProvider>
                 <DuoPartnerListProvider>
                     <SearchResultsProvider>
-                        <App />
+                        <PopularResultsProvider>
+                            <App />
+                        </PopularResultsProvider>
                     </SearchResultsProvider>
                 </DuoPartnerListProvider>
             </MyListProvider>
