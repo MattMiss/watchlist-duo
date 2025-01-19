@@ -4,22 +4,23 @@ import {
     TV
 } from "../types/tmdb";
 import MediaResultCard from "./MediaResultCard";
-import { addToMyList } from "../utils/firestoreUtils";
 import { toast } from "react-toastify";
 import { useDiscoverResults } from "../context/popularResults/useDiscoverResultsContext";
 import { useAuth } from "../context/auth/useAuthContext";
+import { useMyList } from "../context/myList/useMyListContext";
 import Spinner from "./Spinner";
 
 
 const Discover = () => {
     const { currentUser } = useAuth();
-    const { discoverOptions, setDiscoverOptions, handleSearch, isLoadingDiscoverResults, results } = useDiscoverResults();
+    const { addToMyList, isAddingToList } = useMyList();
+    const { discoverOptions, setDiscoverOptions, refreshDiscoverResults, isLoadingDiscoverResults, results } = useDiscoverResults();
     const [shouldSearch, setShouldSearch] = useState<boolean>(false);
 
     // Trigger handleSearch when `page` or `searchType` changes and `shouldSearch` is true
     useEffect(() => {
         if (shouldSearch) {
-            handleSearch();
+            refreshDiscoverResults();
             setShouldSearch(false); // Reset to prevent redundant searches
         }
     }, [discoverOptions.page, shouldSearch]);
@@ -37,7 +38,7 @@ const Discover = () => {
         }
 
         try {
-            await addToMyList(currentUser.uid, media, type);
+            await addToMyList(media, type);
         } catch (error) {
             console.error("Error adding media to list:", error);
         }
@@ -55,7 +56,7 @@ const Discover = () => {
                             key={result.id}
                             media={result as Movie}
                             type="movie"
-                            actionLabel="Add to My List"
+                            actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                             onActionClick={() => handleAddToList(result as Movie, "movie")}
                         />
                     );
@@ -65,7 +66,7 @@ const Discover = () => {
                             key={result.id}
                             media={result as TV}
                             type="tv"
-                            actionLabel="Add to My List"
+                            actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                             onActionClick={() => handleAddToList(result as TV, "tv")}
                         />
                     );
@@ -80,7 +81,7 @@ const Discover = () => {
                         key={result.id}
                         media={result as Movie}
                         type="movie"
-                        actionLabel="Add to My List"
+                        actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                         onActionClick={() => handleAddToList(result as Movie, "movie")}
                     />
                 );
@@ -90,7 +91,7 @@ const Discover = () => {
                         key={result.id}
                         media={result as TV}
                         type="tv"
-                        actionLabel="Add to My List"
+                        actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                         onActionClick={() => handleAddToList(result as TV, "tv")}
                     />
                 );
@@ -196,7 +197,7 @@ const Discover = () => {
             </div>
 
             <button
-                onClick={handleSearch}
+                onClick={refreshDiscoverResults}
                 className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition"
             >
                 {`Get ${discoverOptions.discoverType} ${discoverOptions.mediaType}s`} 

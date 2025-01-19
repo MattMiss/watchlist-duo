@@ -5,10 +5,11 @@ import MediaResultCard from "./MediaResultCard";
 import Spinner from "./Spinner";
 import { Movie, TV } from "../types/tmdb";
 import { useAuth } from "../context/auth/useAuthContext";
+import { toast } from "react-toastify";
 
 const MediaLists = () => {
   const { currentUser } = useAuth();
-  const { myList, refreshMyList, isLoadingMyList } = useMyList();
+  const { myList, refreshMyList, deleteFromMyList, isLoadingMyList, isDeletingFromList } = useMyList();
   const { duoPartnerList, refreshDuoPartnerList, isLoadingDuoPartnerList } = useDuoPartnerList();
   const [activeTab, setActiveTab] = useState<"myList" | "partnerList" | "ourList">("myList");
   const [displayList, setDisplayList] = useState<(Movie | TV)[]>([]);
@@ -36,6 +37,19 @@ const MediaLists = () => {
       setDisplayList(commonItems);
     }
   }, [activeTab, myList, duoPartnerList]);
+
+  const handleRemoveFromList = async (mediaId: number, type: "movie" | "tv") => {
+          if (!currentUser) {
+              toast.error("You must be logged in to remove items from your list.");
+              return;
+          }
+  
+          try {
+              await deleteFromMyList(mediaId.toString(), type);
+          } catch (error) {
+              console.error("Error adding media to list:", error);
+          }
+      };
 
   if (isLoadingMyList || isLoadingDuoPartnerList) {
     return <Spinner />;
@@ -87,10 +101,10 @@ const MediaLists = () => {
                     key={media.id}
                     media={media}
                     type={media.media_type} // Use the type from media
-                    actionLabel="Remove from My List"
+                    actionLabel={isDeletingFromList ? "Removing..." : "Remove from My List"}
                     actionBtnColor="bg-red-500"
                     actionBtnHoverColor="hover:bg-red-700"
-                    onActionClick={() => console.log(`Removed ${media.media_type}: ${media.id}`)}
+                    onActionClick={() => handleRemoveFromList(media.id, media.media_type)}
                 />
             ))}
         </div>

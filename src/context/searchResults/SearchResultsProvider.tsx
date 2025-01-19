@@ -1,18 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Movie, TV, Person } from "../../types/tmdb";
-import { toast } from "react-toastify";
-import { SearchOptions } from "../../types/tmdb";
-import { SearchResultsContext } from "./searchResultsContext";
+import { useQuery } from "@tanstack/react-query";
+import { Movie, TV, Person, SearchOptions } from "../../types/tmdb";
 import { useAuth } from "../auth/useAuthContext";
+import { SearchResultsContext } from "./searchResultsContext";
 import { ExtendedUser } from "../../types/firebase";
+import { toast } from "react-toastify";
 
 const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
     const { currentUser } = useAuth();
-    const [results, setResults] = useState<(Movie | TV | Person)[]>([]);
-    const [isLoadingSearchResults, setIsLoadingSearchResults] = useState(false);
-  
-    // Default search options
     const [searchOptions, setSearchOptions] = useState<SearchOptions>({
         query: "",
         includeAdult: false,
@@ -24,120 +20,66 @@ const SearchResultsProvider = ({ children }: { children: React.ReactNode }) => {
         excludeIncomplete: false,
         page: 1,
     });
-  
-    const handleSearch = async () => {
-        if (!searchOptions.query) return;
-    
-        const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/search`;
-    
-        try {
-            if (!currentUser) {
-                toast.error("User not authenticated. Please log in.");
-                return;
-            }
 
-            const idToken = (currentUser as ExtendedUser)?.stsTokenManager?.accessToken;
-
-            setIsLoadingSearchResults(true);
-    
-            // Define the response type dynamically based on `searchType`
-            let response;
-            if (searchOptions.searchType === "movie") {
-                response = await axios.get<{ results: Movie[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        query: searchOptions.query.trim(),
-                        includeAdult: searchOptions.includeAdult,
-                        language: searchOptions.language,
-                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
-                        year: searchOptions.year || undefined,
-                        region: searchOptions.region || undefined,
-                        searchType: searchOptions.searchType,
-                        page: searchOptions.page,
-                    },
-                });
-            } else if (searchOptions.searchType === "tv") {
-                response = await axios.get<{ results: TV[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        query: searchOptions.query.trim(),
-                        includeAdult: searchOptions.includeAdult,
-                        language: searchOptions.language,
-                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
-                        year: searchOptions.year || undefined,
-                        region: searchOptions.region || undefined,
-                        searchType: searchOptions.searchType,
-                        page: searchOptions.page,
-                    },
-                });
-            } else if (searchOptions.searchType === "person") {
-                response = await axios.get<{ results: Person[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        query: searchOptions.query.trim(),
-                        includeAdult: searchOptions.includeAdult,
-                        language: searchOptions.language,
-                        searchType: searchOptions.searchType,
-                        page: searchOptions.page,
-                    },
-                });
-            } else {
-                response = await axios.get<{ results: (Movie | TV | Person)[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        query: searchOptions.query.trim(),
-                        includeAdult: searchOptions.includeAdult,
-                        language: searchOptions.language,
-                        primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
-                        year: searchOptions.year || undefined,
-                        region: searchOptions.region || undefined,
-                        searchType: searchOptions.searchType,
-                        page: searchOptions.page,
-                    },
-                });
-            }
-    
-            // const filteredResults = searchOptions.excludeIncomplete
-            // ? response.data.results.filter((result) => {
-            //     if ("poster_path" in result) {
-            //         return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
-            //     }
-            //     return true;
-            //     })
-            // : response.data.results;
-
-            console.log(response.data.results);
-    
-            setResults(response.data.results);
-        } catch (error) {
-            toast.error("Error fetching results. Please refresh and try again.");
-            console.error("Error fetching results:", error);
-        } finally {
-            setIsLoadingSearchResults(false);
+    const fetchSearchResults = async () => {
+        if (!currentUser) {
+            throw new Error("User not authenticated. Please log in.");
         }
+
+        const idToken = (currentUser as ExtendedUser)?.stsTokenManager?.accessToken;
+
+        const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/search`;
+
+        const response = await axios.get<{ results: (Movie | TV | Person)[] }>(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+            },
+            params: {
+                query: searchOptions.query.trim(),
+                includeAdult: searchOptions.includeAdult,
+                language: searchOptions.language,
+                primaryReleaseYear: searchOptions.primaryReleaseYear || undefined,
+                year: searchOptions.year || undefined,
+                region: searchOptions.region || undefined,
+                searchType: searchOptions.searchType,
+                page: searchOptions.page,
+            },
+        });
+
+        return response.data.results;
     };
 
-  return (
+    const {
+        data: results = [],
+        isLoading: isLoadingSearchResults,
+        refetch: refetchSearchResults,
+        error,
+    } = useQuery({
+        queryKey: ["searchResults", searchOptions],
+        queryFn: fetchSearchResults,
+        enabled: !!searchOptions.query, // Only fetch when a query is provided
+        retry: false,
+        staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+    });
+
+    // Handle errors separately
+    useEffect(() => {
+        if (error) {
+            toast.error("Error fetching results. Please refresh and try again.");
+            console.error("Error fetching results:", error);
+        }
+    }, [error]);
+
+    return (
         <SearchResultsContext.Provider
             value={{
                 isLoadingSearchResults,
                 results,
                 searchOptions,
                 setSearchOptions: (options) =>
-                setSearchOptions((prevOptions) => ({ ...prevOptions, ...options })),
-                handleSearch,
+                    setSearchOptions((prevOptions) => ({ ...prevOptions, ...options })),
+                refetchSearchResults,
             }}
         >
             {children}

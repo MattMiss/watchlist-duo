@@ -5,6 +5,7 @@ import { AuthContext } from "./authContext";
 import { auth } from "../../firebase";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import initializeUserInDatabase from "../../utils/initializeUserInDatabase";
+import Spinner from "../../components/Spinner";
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -53,7 +54,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
   
     if (isAuthorizing) {
-      return <div>Loading...</div>; // Display a loading spinner or placeholder while authorizing
+      return <Spinner />; 
     }
   
     return (

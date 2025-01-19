@@ -8,7 +8,7 @@ interface SearchResultsContextProps {
     results: (Movie | TV | Person)[];
     searchOptions: SearchOptions;
     setSearchOptions: (options: Partial<SearchOptions>) => void;
-    handleSearch: () => void;
+    refetchSearchResults: () => void;
 }
 
 export const SearchResultsContext = createContext<SearchResultsContextProps | undefined>(

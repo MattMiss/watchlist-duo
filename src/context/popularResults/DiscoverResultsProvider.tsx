@@ -6,13 +6,12 @@ import { DiscoverOptions } from "../../types/tmdb";
 import { DiscoverResultsContext } from "./discoverResultsContext";
 import { useAuth } from "../auth/useAuthContext";
 import { ExtendedUser } from "../../types/firebase";
+import { useQuery } from "@tanstack/react-query";
 
 const DiscoverResultsProvider = ({ children }: { children: React.ReactNode }) => {
     const { currentUser } = useAuth();
-    const [results, setResults] = useState<(Movie | TV )[]>([]);
-    const [isLoadingDiscoverResults, setIsLoadingDiscoverResults] = useState(false);
   
-    // Default search options
+    // Default discover options
     const [discoverOptions, setDiscoverOptions] = useState<DiscoverOptions>({
         language: "en-US",
         mediaType: "movie",
@@ -21,102 +20,54 @@ const DiscoverResultsProvider = ({ children }: { children: React.ReactNode }) =>
         excludeIncomplete: false,
         page: 1,
     });
-  
-    const handleSearch = async () => {
+
+    const fetchDiscoverResults = async () => {
+        if (!currentUser) {
+            toast.error("User not authenticated. Please log in.");
+            throw new Error("User not authenticated");
+        }
+
+        const idToken = (currentUser as ExtendedUser)?.stsTokenManager?.accessToken;
 
         const discoverTypeMap = {
             popular: "popular",
-            trending: "trending"
+            trending: "trending",
         };
-    
+
         const apiUrl = `${import.meta.env.VITE_BACKEND_URL}/api/${discoverTypeMap[discoverOptions.discoverType]}`;
-    
-        try {
-            if (!currentUser) {
-                toast.error("User not authenticated. Please log in.");
-                return;
-            }
 
-            const idToken = (currentUser as ExtendedUser)?.stsTokenManager?.accessToken;
+        const response = await axios.get<{ results: (Movie | TV)[] }>(apiUrl, {
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+            },
+            params: {
+                language: discoverOptions.language,
+                mediaType: discoverOptions.mediaType,
+                discoverType: discoverOptions.discoverType,
+                timeWindow: discoverOptions.timeWindow,
+                page: discoverOptions.page,
+            },
+        });
 
-            setIsLoadingDiscoverResults(true);
-    
-            // Define the response type dynamically based on `searchType`
-            let response;
-            if (discoverOptions.mediaType === "movie") {
-                response = await axios.get<{ results: Movie[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        language: discoverOptions.language,
-                        mediaType: discoverOptions.mediaType,
-                        discoverType: discoverOptions.discoverType,
-                        timeWindow: discoverOptions.timeWindow,
-                        page: discoverOptions.page,
-                    },
-                });
-            } else if (discoverOptions.mediaType === "tv") {
-                response = await axios.get<{ results: TV[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        language: discoverOptions.language,
-                        mediaType: discoverOptions.mediaType,
-                        discoverType: discoverOptions.discoverType,
-                        timeWindow: discoverOptions.timeWindow,
-                        page: discoverOptions.page,
-                    },
-                });
-            } 
-            else {
-                response = await axios.get<{ results: (Movie | TV)[] }>(apiUrl, {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`, // Add the token in the header
-                        "Content-Type": "application/json",
-                    },
-                        params: {
-                        language: discoverOptions.language,
-                        mediaType: discoverOptions.mediaType,
-                        discoverType: discoverOptions.discoverType,
-                        timeWindow: discoverOptions.timeWindow,
-                        page: discoverOptions.page,
-                    },
-                });
-            }
-    
-            // const filteredResults = searchOptions.excludeIncomplete
-            // ? response.data.results.filter((result) => {
-            //     if ("poster_path" in result) {
-            //         return result.poster_path && result.vote_average !== undefined && result.vote_average > 0;
-            //     }
-            //     return true;
-            //     })
-            // : response.data.results;
-
-            console.log(response.data.results);
-    
-            setResults(response.data.results);
-        } catch (error) {
-            toast.error("Error fetching results. Please refresh and try again.");
-            console.error("Error fetching results:", error);
-        } finally {
-            setIsLoadingDiscoverResults(false);
-        }
+        return response.data.results;
     };
 
-  return (
+    const { data: results = [], isLoading: isLoadingDiscoverResults, refetch: refreshDiscoverResults } = useQuery({
+        queryKey: ["discoverResults", discoverOptions],
+        queryFn: fetchDiscoverResults,
+        enabled: !!currentUser, // Only fetch when the user is logged in
+        staleTime: 1000 * 60 * 5, // Cache data for 5 minutes
+    });
+
+    return (
         <DiscoverResultsContext.Provider
             value={{
                 isLoadingDiscoverResults,
                 results,
                 discoverOptions,
-                setDiscoverOptions: (options) =>
-                    setDiscoverOptions((prevOptions) => ({ ...prevOptions, ...options })),
-                handleSearch,
+                setDiscoverOptions: (options) => setDiscoverOptions((prevOptions) => ({ ...prevOptions, ...options })),
+                refreshDiscoverResults, // Refetching function exposed to components
             }}
         >
             {children}

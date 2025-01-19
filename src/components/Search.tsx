@@ -6,23 +6,24 @@ import {
     Multi,
 } from "../types/tmdb";
 import MediaResultCard from "./MediaResultCard";
-import { addToMyList } from "../utils/firestoreUtils";
 import { toast } from "react-toastify";
 import { useSearchResults } from "../context/searchResults/useSearchResultsContext";
 import { useAuth } from "../context/auth/useAuthContext";
+import { useMyList } from "../context/myList/useMyListContext";
 import Spinner from "./Spinner";
 
 //const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
 const Search = () => {
     const { currentUser } = useAuth();
-    const { searchOptions, setSearchOptions, handleSearch, isLoadingSearchResults, results } = useSearchResults();
+    const { addToMyList, isAddingToList } = useMyList();
+    const { searchOptions, setSearchOptions, refetchSearchResults, isLoadingSearchResults, results } = useSearchResults();
     const [shouldSearch, setShouldSearch] = useState<boolean>(false);
 
     // Trigger handleSearch when `page` or `searchType` changes and `shouldSearch` is true
     useEffect(() => {
         if (shouldSearch) {
-            handleSearch();
+            refetchSearchResults();
             setShouldSearch(false); // Reset to prevent redundant searches
         }
     }, [searchOptions.page, shouldSearch]);
@@ -40,7 +41,7 @@ const Search = () => {
         }
 
         try {
-            await addToMyList(currentUser.uid, media, type);
+            await addToMyList(media, type);
         } catch (error) {
             console.error("Error adding media to list:", error);
         }
@@ -58,7 +59,7 @@ const Search = () => {
                             key={result.id}
                             media={result as Movie}
                             type="movie"
-                            actionLabel="Add to My List"
+                            actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                             onActionClick={() => handleAddToList(result as Movie, "movie")}
                         />
                     );
@@ -68,7 +69,7 @@ const Search = () => {
                             key={result.id}
                             media={result as TV}
                             type="tv"
-                            actionLabel="Add to My List"
+                            actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                             onActionClick={() => handleAddToList(result as TV, "tv")}
                         />
                     );
@@ -83,7 +84,7 @@ const Search = () => {
                         key={result.id}
                         media={result as Movie}
                         type="movie"
-                        actionLabel="Add to My List"
+                        actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                         onActionClick={() => handleAddToList(result as Movie, "movie")}
                     />
                 );
@@ -93,7 +94,7 @@ const Search = () => {
                         key={result.id}
                         media={result as TV}
                         type="tv"
-                        actionLabel="Add to My List"
+                        actionLabel={isAddingToList ? "Adding..." : "Add to My List"}
                         onActionClick={() => handleAddToList(result as TV, "tv")}
                     />
                 );
@@ -119,7 +120,7 @@ const Search = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                 onKeyDown={(e) => {
                     if (e.key === "Enter" && searchOptions.query) {
-                        handleSearch();
+                        refetchSearchResults();
                     }
                 }}
             />
@@ -237,7 +238,7 @@ const Search = () => {
             </div>
 
             <button
-                onClick={handleSearch}
+                onClick={refetchSearchResults}
                 className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition"
             >
                 Search
